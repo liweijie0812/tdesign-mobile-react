@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Icon } from 'tdesign-icons-react';
-import { Grid, GridItem } from '../../grid';
-import { SideBarProps, SideBarItemProps, SideBar, SideBarItem } from '..';
+import { AppIcon } from 'tdesign-icons-react';
+import type { SideBarProps, SideBarItemProps } from 'tdesign-mobile-react';
+import { SideBar, SideBarItem, Grid, GridItem } from 'tdesign-mobile-react';
+
 import './style/base.less';
 
 const image = 'https://tdesign.gtimg.com/mobile/demos/example2.png';
 const items = new Array(12).fill({ label: '标题文字', image });
-const icon = <Icon name="app" />;
+const icon = <AppIcon />;
 
 const categories = [
   { label: '选项一', title: '标题一', badgeProps: {}, items, icon },

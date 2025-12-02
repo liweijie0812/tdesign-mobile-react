@@ -1,16 +1,32 @@
-import React, { FC, ReactNode, useRef } from 'react';
-import useConfig from '../_util/useConfig';
+import React, { useRef } from 'react';
+import classNames from 'classnames';
+import { StyledProps } from '../common';
+import useConfig from '../hooks/useConfig';
 import Radio, { RadioContext, RadioContextValue, RadioProps } from './Radio';
-import { TdRadioGroupProps } from './type';
 import useDefault from '../_util/useDefault';
+import type { TdRadioGroupProps } from './type';
 
-export interface RadioGroupProps extends TdRadioGroupProps {
-  children?: ReactNode;
+export interface RadioGroupProps extends TdRadioGroupProps, StyledProps {
+  children?: React.ReactNode;
 }
 
-const RadioGroup: FC<RadioGroupProps> = (props) => {
+const RadioGroup: React.FC<RadioGroupProps> = (props) => {
   const { classPrefix } = useConfig();
-  const { disabled, options, value, defaultValue, children, onChange } = props;
+  const {
+    disabled,
+    icon,
+    options,
+    value,
+    defaultValue,
+    children,
+    readonly,
+    onChange,
+    allowUncheck,
+    borderless,
+    className,
+    style,
+    placement,
+  } = props;
   const groupRef = useRef(null);
   const [internalValue, setInternalValue] = useDefault(value, defaultValue, onChange);
 
@@ -26,19 +42,23 @@ const RadioGroup: FC<RadioGroupProps> = (props) => {
           typeof radioProps.value !== 'undefined' &&
           internalValue === radioProps.value,
         disabled: radioProps.disabled || disabled,
+        icon: radioProps.icon || icon,
+        readonly: radioProps.readonly || readonly,
+        allowUncheck: radioProps.allowUncheck || allowUncheck,
+        borderless: radioProps.borderless || borderless,
+        placement: radioProps.placement || placement,
         onChange: (checked, { e }) => {
           if (typeof radioProps.onChange === 'function') {
             radioProps.onChange(checked, { e });
           }
-          // @ts-ignore
-          setInternalValue(radioProps.value, { e });
+          setInternalValue(radioProps.value, { e, name: props.name });
         },
       };
     },
   };
 
   const renderOptions = () =>
-    options.map((option) => {
+    options.map((option, index) => {
       if (typeof option === 'number' || typeof option === 'string') {
         return (
           <Radio value={option} key={option} label={option}>
@@ -47,18 +67,14 @@ const RadioGroup: FC<RadioGroupProps> = (props) => {
         );
       }
       return (
-        <Radio value={option.value} key={option.value} disabled={option.disabled}>
+        <Radio value={option.value} key={index} disabled={option.disabled}>
           {option.label}
         </Radio>
       );
     });
   return (
-    <div ref={groupRef} className={`${classPrefix}-radio-group`}>
-      <div className={`${classPrefix}-cell-group`}>
-        <div className={`${classPrefix}cell-group__container`}>
-          <RadioContext.Provider value={context}>{options?.length ? renderOptions() : children}</RadioContext.Provider>
-        </div>
-      </div>
+    <div ref={groupRef} style={style} className={classNames(`${classPrefix}-radio-group`, className)}>
+      <RadioContext.Provider value={context}>{options?.length ? renderOptions() : children}</RadioContext.Provider>
     </div>
   );
 };

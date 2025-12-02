@@ -1,9 +1,7 @@
 import React, { FC, useContext, useMemo } from 'react';
 import cls from 'classnames';
-import isString from 'lodash/isString';
-import isObject from 'lodash/isObject';
-import isFunction from 'lodash/isFunction';
-import useConfig from '../_util/useConfig';
+import { isFunction, isString, isObject } from 'lodash-es';
+import useConfig from '../hooks/useConfig';
 import parseTNode from '../_util/parseTNode';
 import useDefaultProps from '../hooks/useDefaultProps';
 import Badge from '../badge';
@@ -45,8 +43,8 @@ const GridItem: FC<GridItemProp> = (prop) => {
   }, [column, align]);
 
   const size = useMemo(() => {
-    if (column > 4 || !column) return 'small';
-    return column < 4 ? 'large' : 'middle';
+    if (!column || column === 4) return 'middle';
+    return column > 4 ? 'small' : 'large';
   }, [column]);
 
   const gridItemImage = useMemo(() => {
@@ -60,7 +58,7 @@ const GridItem: FC<GridItemProp> = (prop) => {
     if (isObject(image) && !isFunction(image) && !React.isValidElement(image)) {
       imgProps = image;
     }
-    return imgProps ? <Image shape="round" {...imgProps} /> : parseTNode(image);
+    return imgProps ? <Image shape="round" {...imgProps} /> : parseTNode(image as React.ReactNode);
   }, [image]);
 
   return (
@@ -69,8 +67,10 @@ const GridItem: FC<GridItemProp> = (prop) => {
         {badge ? <Badge {...badge}>{gridItemImage}</Badge> : gridItemImage}
       </div>
       <div className={cls([`${name}__content`, `${name}__content--${layout}`])}>
-        <div className={cls([`${name}__title`, `${name}__title--${size}`])}>{text}</div>
-        <div className={cls([`${name}__description`, `${name}__description--${layout}`])}>{description}</div>
+        <div className={cls([`${name}__title`, `${name}__title--${size}`])}>{parseTNode(text)}</div>
+        <div className={cls([`${name}__description`, `${name}__description--${layout}`])}>
+          {parseTNode(description)}
+        </div>
       </div>
     </div>
   );

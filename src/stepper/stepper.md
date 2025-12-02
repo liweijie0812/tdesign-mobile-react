@@ -24,3 +24,14 @@ onBlur | Function |  | TS 类型：`(value: string \| number) => void`<br/>输�
 onChange | Function |  | TS 类型：`(value: string \| number) => void`<br/>数值发生变更时触发 | N
 onFocus | Function |  | TS 类型：`(value: string \| number) => void`<br/>输入框聚焦时触发 | N
 onOverlimit | Function |  | TS 类型：`(type: 'minus' \| 'plus') => void`<br/>数值超出限制时触发 | N
+
+### CSS Variables
+
+组件提供了下列 CSS 变量，可用于自定义样式。
+名称 | 默认值 | 描述 
+-- | -- | --
+--td-stepper-border-color | @component-border | -
+--td-stepper-border-radius | @radius-small | -
+--td-stepper-input-color | @text-color-primary | -
+--td-stepper-input-disabled-bg | @bg-color-component-disabled | -
+--td-stepper-input-disabled-color | @text-color-disabled | -

@@ -1,8 +1,7 @@
 import React, { FC, useEffect, useRef, useState } from 'react';
 import type { MouseEvent, TouchEvent } from 'react';
 import classNames from 'classnames';
-import isFunction from 'lodash/isFunction';
-import cloneDeep from 'lodash/cloneDeep';
+import { cloneDeep, isFunction } from 'lodash-es';
 import { usePrefixClass } from '../hooks/useClass';
 import useDefaultProps from '../hooks/useDefaultProps';
 import useDefault from '../_util/useDefault';
@@ -121,7 +120,7 @@ const Slider: FC<SliderProps> = (props) => {
 
       if (Object.prototype.toString.call(marks) === '[object Object]') {
         const scaleArray = Object.keys(marks).map((item) => Number(item));
-        const scaleTextArray = scaleArray.map((item) => marks[item]);
+        const scaleTextArray = scaleArray.map((item) => (isFunction(marks[item]) ? marks[item](item) : marks[item]));
         setIsScale(scaleArray.length > 0);
         setScaleArray(calcPos(scaleArray));
         setScaleTextArray(scaleTextArray);
@@ -152,7 +151,7 @@ const Slider: FC<SliderProps> = (props) => {
     if (isFunction(label)) {
       return label(value);
     }
-    if (label) {
+    if (label && !REGEXP.test(label)) {
       return value;
     }
     if (REGEXP.test(label)) {

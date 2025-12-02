@@ -9,7 +9,9 @@ import { navbarDefaultProps } from './defaultProps';
 import parseTNode from '../_util/parseTNode';
 import useDefaultProps from '../hooks/useDefaultProps';
 
-export interface NavbarProps extends TdNavbarProps, StyledProps {}
+export interface NavbarProps extends TdNavbarProps, StyledProps {
+  children?: React.ReactNode;
+}
 
 const Navbar: React.FC<NavbarProps> = (originProps) => {
   const props = useDefaultProps(originProps, navbarDefaultProps);
@@ -49,8 +51,8 @@ const Navbar: React.FC<NavbarProps> = (originProps) => {
     if (isStringTitle && !isNaN(titleMaxLength)) {
       if (titleMaxLength <= 0) {
         console.warn('titleMaxLength must be greater than 0');
-      } else if ((titleNode as String).length > titleMaxLength) {
-        titleNode = `${(titleNode as String).slice(0, titleMaxLength)}...`;
+      } else if ((titleNode as string).length > titleMaxLength) {
+        titleNode = `${(titleNode as string).slice(0, titleMaxLength)}...`;
       }
     }
 

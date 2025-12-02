@@ -49,6 +49,9 @@ export function show(props: DialogShowProps): DialogInstance {
       update: (opts) => {
         setOptions(opts);
       },
+      destroy: () => {
+        destroy();
+      },
     }));
 
     return (
@@ -65,10 +68,10 @@ export function show(props: DialogShowProps): DialogInstance {
   destroy = renderToBody(<Wrapper ref={ref} />);
 
   return {
-    hide: ref.current?.hide,
-    show: ref.current?.show,
-    update: ref.current?.update,
-    destroy,
+    hide: () => ref.current?.hide(),
+    show: () => ref.current?.show(),
+    update: (opts: DialogShowProps) => ref.current?.update(opts),
+    destroy: () => ref.current?.destroy(),
   };
 }
 

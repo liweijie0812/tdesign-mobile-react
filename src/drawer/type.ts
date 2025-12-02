@@ -4,8 +4,9 @@
  * 该文件为脚本自动生成文件，请勿随意修改。如需修改请联系 PMC
  * */
 
+import { OverlayProps } from '../overlay';
 import { TNode, TElement, Styles, AttachNode } from '../common';
-import { MouseEvent, KeyboardEvent } from 'react';
+import { MouseEvent } from 'react';
 
 export interface TdDrawerProps {
   /**
@@ -31,6 +32,11 @@ export interface TdDrawerProps {
    */
   items?: DrawerItem[];
   /**
+   * 遮罩层的属性，透传至 overlay
+   * @default {}
+   */
+  overlayProps?: OverlayProps;
+  /**
    * 抽屉方向
    * @default right
    */
@@ -54,9 +60,9 @@ export interface TdDrawerProps {
    */
   zIndex?: number;
   /**
-   * 关闭时触发。[详细类型定义](https://github.com/Tencent/tdesign-miniprogram/tree/develop/src/drawer/type.ts)。<br/>`type TriggerSource = 'overlay'`<br/>
+   * 关闭时触发。
    */
-  onClose?: (trigger: TriggerSource) => void;
+  onClose?: (trigger: DrawerTriggerSource) => void;
   /**
    * 点击抽屉里的列表项
    */
@@ -103,8 +109,6 @@ export interface DrawerItem {
   icon?: TNode;
 }
 
-export type TriggerSource = 'overlay';
+export type DrawerTriggerSource = 'overlay';
 
 export type DrawerMethod = (options?: DrawerOptions) => void;
-
-export type DrawerEventSource = 'esc' | 'close-btn' | 'cancel' | 'overlay';

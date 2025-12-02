@@ -1,6 +1,6 @@
 import React from 'react';
 import { SwipeCell, Cell, Toast } from 'tdesign-mobile-react';
-import { Icon } from 'tdesign-icons-react';
+import { EditIcon, DeleteIcon } from 'tdesign-icons-react';
 import TDemoBlock from '../../../site/mobile/components/DemoBlock';
 
 export default function Demo() {
@@ -10,8 +10,8 @@ export default function Demo() {
     });
   };
 
-  const editIcon = <Icon name="edit" />;
-  const delIcon = <Icon name="delete" />;
+  const editIcon = <EditIcon />;
+  const delIcon = <DeleteIcon />;
 
   const handleEdit = () => handleClick('编辑');
   const handleDelete = () => handleClick('删除');
@@ -27,8 +27,8 @@ export default function Demo() {
   }));
 
   const pureIcon = [
-    { icon: editIcon, className: 'btn edit-btn', onClick: handleEdit },
-    { icon: delIcon, className: 'btn delete-btn', onClick: handleDelete },
+    { icon: editIcon, text: '', className: 'btn edit-btn', onClick: handleEdit },
+    { icon: delIcon, text: '', className: 'btn delete-btn', onClick: handleDelete },
   ];
 
   return (

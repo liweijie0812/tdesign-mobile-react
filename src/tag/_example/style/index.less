@@ -1,13 +1,15 @@
+.tdesign-demo-topnav,
 .tdesign-mobile-demo {
-  background-color: var(--bg-color-demo, #fff)
+  --bg-color-demo: var(--td-bg-color-container);
 }
+
 
 .tag-demo {
   background-color: #fff;
   padding: 16px;
   display: flex;
 
-  .t-tag+.t-tag {
+  .t-tag + .t-tag {
     margin-left: 16px;
   }
 }
@@ -21,14 +23,14 @@
   align-items: center;
 
   &__title {
-    color: var(--td-text-color-disabled, rgba(0, 0, 0, 0.4));
+    color: var(--td-text-color-disabled, rgba(0, 0, 0, .4));
     font-size: 14px;
     width: 80px;
     margin-right: 16px;
   }
 }
 
-.tag-demo+.tag-demo {
+.tag-demo + .tag-demo {
   margin-top: 16px;
 }
 
@@ -62,7 +64,7 @@
 }
 
 .tag-block1 {
-  >.t-tag {
+  > .t-tag {
     margin: 0;
   }
 }

@@ -5,7 +5,7 @@ import { TdCountDownProps, TimeData } from '../../type';
 enum EnumCountDownStatus {
   active,
   inActive,
-  pasued,
+  paused,
   finished,
 }
 
@@ -26,20 +26,27 @@ export const useCountDown = (params: UseCountdownParams) => {
     timeText: '',
     status: EnumCountDownStatus.inActive,
   });
-  const interval = millisecond ? 30 : 1000;
   const ctxRef = useRef({ timerId: 0, remainTime: time });
+  // 处理毫秒级展示
+  const getProcessedFormat = (currentFormat: string) => {
+    if (millisecond && !format.includes(':SSS')) return currentFormat.concat(':SSS');
+    return currentFormat;
+  };
 
   const clearCountDown = () => {
     const currentTimerId = ctxRef.current.timerId;
     if (currentTimerId) {
-      currentTimerId && clearInterval(currentTimerId);
+      window.cancelAnimationFrame(currentTimerId);
       ctxRef.current.timerId = 0;
       setCountDownData((state) => ({ ...state, status: EnumCountDownStatus.inActive }));
     }
   };
+  let previousFrameTimestamp = 0;
 
-  const tick = (reset = false) => {
-    let nextRemainTime = reset ? time : ctxRef.current.remainTime - interval;
+  const tick = (timestamp, reset = false) => {
+    const delta = timestamp - (previousFrameTimestamp || timestamp);
+
+    let nextRemainTime = reset ? time : ctxRef.current.remainTime - delta;
     ctxRef.current.remainTime = nextRemainTime;
 
     let nextStatus = EnumCountDownStatus.active;
@@ -48,44 +55,59 @@ export const useCountDown = (params: UseCountdownParams) => {
       clearCountDown();
       nextStatus = EnumCountDownStatus.finished;
       onFinish?.();
+      window.cancelAnimationFrame(ctxRef.current.timerId);
+    } else {
+      (ctxRef.current as any).timerId = window.requestAnimationFrame(tick);
     }
 
     const countDownData = {
-      ...transformTime(nextRemainTime, format),
+      ...transformTime(nextRemainTime, getProcessedFormat(format)),
       status: nextStatus,
     };
+
     onChange?.(countDownData.timeData);
     setCountDownData(countDownData);
+
+    previousFrameTimestamp = timestamp;
   };
 
-  const startCountDown = () => {
+  const startCountDown = (reset = false) => {
     clearCountDown();
-    (ctxRef.current as any).timerId = setInterval(() => tick(), interval);
+    (ctxRef.current as any).timerId = window.requestAnimationFrame((timestamp) => tick(timestamp, reset));
   };
 
   useEffect(() => {
-    tick(true);
-    startCountDown();
+    if (autoStart) {
+      startCountDown(true);
+    } else {
+      clearCountDown();
+      ctxRef.current.remainTime = time;
+      const initialData = transformTime(time, getProcessedFormat(format));
+      setCountDownData({
+        ...initialData,
+        status: EnumCountDownStatus.inActive,
+      });
+    }
+
     return clearCountDown;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [time, millisecond, interval, format]);
+  }, [time, millisecond, format, autoStart]);
 
   const start = () => {
     if (status === EnumCountDownStatus.active) return;
-    tick();
     startCountDown();
   };
 
   const pause = () => {
     clearCountDown();
-    setCountDownData((state) => ({ ...state, status: EnumCountDownStatus.pasued }));
+    setCountDownData((state) => ({ ...state, status: EnumCountDownStatus.paused }));
   };
 
   const reset = () => {
     clearCountDown();
-    tick(true);
+
     if (autoStart) {
-      startCountDown();
+      startCountDown(true);
     } else {
       setCountDownData((state) => ({ ...state, status: EnumCountDownStatus.inActive }));
     }
@@ -93,7 +115,7 @@ export const useCountDown = (params: UseCountdownParams) => {
 
   const isActive = status === EnumCountDownStatus.active;
   const isInActive = status === EnumCountDownStatus.inActive;
-  const isPasued = status === EnumCountDownStatus.pasued;
+  const isPaused = status === EnumCountDownStatus.paused;
   const isFinished = status === EnumCountDownStatus.finished;
 
   return {
@@ -106,7 +128,7 @@ export const useCountDown = (params: UseCountdownParams) => {
     reset,
     isActive,
     isInActive,
-    isPasued,
+    isPaused,
     isFinished,
   };
 };

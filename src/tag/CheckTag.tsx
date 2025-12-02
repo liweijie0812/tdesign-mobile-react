@@ -1,9 +1,9 @@
 import classNames from 'classnames';
 import React, { forwardRef } from 'react';
-import { Icon } from 'tdesign-icons-react';
+import { CloseIcon } from 'tdesign-icons-react';
 import parseTNode from '../_util/parseTNode';
 import { StyledProps } from '../common';
-import useConfig from '../_util/useConfig';
+import useConfig from '../hooks/useConfig';
 import useDefault from '../_util/useDefault';
 import useDefaultProps from '../hooks/useDefaultProps';
 import { checkTagDefaultProps } from './defaultProps';
@@ -55,6 +55,7 @@ const CheckTag = forwardRef<HTMLSpanElement, CheckTagProps>((originProps, ref) =
   );
 
   const renderText = () => {
+    // @ts-ignore
     if (Array.isArray(content) && content.length === 2) {
       return innerChecked ? content[0] : content[1];
     }
@@ -95,7 +96,7 @@ const CheckTag = forwardRef<HTMLSpanElement, CheckTagProps>((originProps, ref) =
       <span className={`${baseClass}__text`}>{childNode}</span>
       {props.closable && (
         <span className={`${baseClass}__icon-close`} onClick={handleClose}>
-          <Icon name="close" />
+          <CloseIcon />
         </span>
       )}
     </span>

@@ -1,12 +1,12 @@
 import cls from 'classnames';
 import React, { forwardRef, memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { CSSTransition } from 'react-transition-group';
-import { Icon } from 'tdesign-icons-react';
+import { ViewListIcon } from 'tdesign-icons-react';
 import type { StyledProps } from '../common';
 import type { TdTabBarItemProps } from './type';
 import { TabBarContext } from './TabBarContext';
 import Badge from '../badge';
-import useTabBarCssTransition from './useTabBarCssTransition';
+import useTabBarCssTransition from './hooks/useTabBarCssTransition';
 import parseTNode from '../_util/parseTNode';
 import useDefaultProps from '../hooks/useDefaultProps';
 import { usePrefixClass } from '../hooks/useClass';
@@ -18,7 +18,7 @@ const defaultBadgeMaxCount = 99;
 
 const TabBarItem = forwardRef<HTMLDivElement, TabBarItemProps>((originProps, ref) => {
   const props = useDefaultProps(originProps, {});
-  const { subTabBar, icon, badgeProps, value, children } = props;
+  const { subTabBar, icon, badgeProps, value, children, className, style } = props;
 
   const hasSubTabBar = useMemo(() => !!subTabBar, [subTabBar]);
   const { defaultIndex, activeValue, updateChild, shape, split, theme, itemCount } = useContext(TabBarContext);
@@ -26,6 +26,8 @@ const TabBarItem = forwardRef<HTMLDivElement, TabBarItemProps>((originProps, ref
   const tabBarItemClass = usePrefixClass('tab-bar-item');
 
   const textNode = useRef<HTMLDivElement>(null);
+
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const [iconOnly, setIconOnly] = useState(false);
 
@@ -101,9 +103,9 @@ const TabBarItem = forwardRef<HTMLDivElement, TabBarItemProps>((originProps, ref
 
   const tabItemCls = cls(
     tabBarItemClass,
+    className,
     {
       [`${tabBarItemClass}--split`]: split,
-      [`${tabBarItemClass}--text-only`]: !icon,
       [`${tabBarItemClass}--crowded`]: crowded,
     },
     `${tabBarItemClass}--${shape}`,
@@ -125,14 +127,12 @@ const TabBarItem = forwardRef<HTMLDivElement, TabBarItemProps>((originProps, ref
 
   const iconSize = `${iconOnly ? 24 : 20}px`;
 
-  const iconContent =
-    icon &&
-    React.cloneElement(icon, {
-      style: { fontSize: iconSize },
-    });
+  const iconContent = () =>
+    // @ts-ignore
+    icon && React.cloneElement(icon, { style: { fontSize: iconSize } });
 
   return (
-    <div className={tabItemCls} ref={ref}>
+    <div className={tabItemCls} ref={ref} style={style}>
       <div
         role="tab"
         aria-label="TabBar"
@@ -144,9 +144,9 @@ const TabBarItem = forwardRef<HTMLDivElement, TabBarItemProps>((originProps, ref
         {icon && (
           <div className={`${tabBarItemClass}__icon`} style={{ height: iconSize }}>
             {badgeProps && (badgeProps?.dot || badgeProps?.count) ? (
-              <Badge content={iconContent} {...mergedBadgeProps} />
+              <Badge content={iconContent()} {...mergedBadgeProps} />
             ) : (
-              iconContent
+              iconContent()
             )}
           </div>
         )}
@@ -154,7 +154,7 @@ const TabBarItem = forwardRef<HTMLDivElement, TabBarItemProps>((originProps, ref
           <div ref={textNode} className={tabItemTextCls}>
             {shouldShowSubTabBar && (
               <>
-                <Icon name="view-list" size="16" />
+                <ViewListIcon size="16" />
                 <div className={`${tabBarItemClass}__icon-menu`} />
               </>
             )}
@@ -163,7 +163,14 @@ const TabBarItem = forwardRef<HTMLDivElement, TabBarItemProps>((originProps, ref
         )}
       </div>
 
-      <CSSTransition timeout={200} in={showSubTabBar} classNames={transitionClsNames} mountOnEnter unmountOnExit>
+      <CSSTransition
+        nodeRef={menuRef}
+        timeout={200}
+        in={showSubTabBar}
+        classNames={transitionClsNames}
+        mountOnEnter
+        unmountOnExit
+      >
         <ul role="menu" className={`${tabBarItemClass}__spread`}>
           {subTabBar?.map((child, index) => (
             <div

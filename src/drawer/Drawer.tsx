@@ -18,6 +18,7 @@ const Drawer: React.FC<DrawerProps> = forwardRef((originProps, ref) => {
   const [state, setState] = useSetState<DrawerProps>({ isPlugin: false, ...props });
 
   const {
+    destroyOnClose,
     className,
     style,
     items,
@@ -25,6 +26,7 @@ const Drawer: React.FC<DrawerProps> = forwardRef((originProps, ref) => {
     title,
     footer,
     showOverlay,
+    overlayProps,
     zIndex,
     isPlugin,
     closeOnOverlayClick,
@@ -94,7 +96,9 @@ const Drawer: React.FC<DrawerProps> = forwardRef((originProps, ref) => {
     <Popup
       visible={show}
       placement={placement}
+      destroyOnClose={destroyOnClose}
       showOverlay={showOverlay}
+      overlayProps={overlayProps}
       zIndex={zIndex}
       onVisibleChange={handleOverlayClick}
     >
@@ -111,7 +115,7 @@ const Drawer: React.FC<DrawerProps> = forwardRef((originProps, ref) => {
                   handleItemClick(index, item, e);
                 }}
               >
-                {!!icon && <span className={`${drawerClass}__sidebar-item-icon`}>{icon}</span>}
+                {!!icon && <span className={`${drawerClass}__sidebar-item-icon`}>{parseTNode(icon)}</span>}
                 <div className={`${drawerClass}__sidebar-item-title`}>{title}</div>
               </div>
             );

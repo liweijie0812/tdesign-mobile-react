@@ -12,16 +12,15 @@ import {
 import { TdCheckboxProps } from './type';
 import forwardRefWithStatics from '../_util/forwardRefWithStatics';
 import CheckboxGroup from './CheckboxGroup';
-import useConfig from '../_util/useConfig';
+import { StyledProps } from '../common';
+import useConfig from '../hooks/useConfig';
 import useDefault from '../_util/useDefault';
-import { parseContentTNode } from '../_util/parseTNode';
+import parseTNode, { parseContentTNode } from '../_util/parseTNode';
 import { usePrefixClass } from '../hooks/useClass';
 import useDefaultProps from '../hooks/useDefaultProps';
 import { checkboxDefaultProps } from './defaultProps';
 
-export interface CheckBoxProps extends TdCheckboxProps {
-  ref: Ref<HTMLLabelElement>;
-}
+export interface CheckBoxProps extends TdCheckboxProps, StyledProps {}
 
 export interface CheckContextValue {
   inject: (props: CheckBoxProps) => CheckBoxProps;
@@ -29,12 +28,13 @@ export interface CheckContextValue {
 
 export const CheckContext = React.createContext<CheckContextValue>(null);
 
-const Checkbox = forwardRef((_props: CheckBoxProps) => {
+const Checkbox = forwardRef<HTMLDivElement, CheckBoxProps>((_props, ref) => {
   const context = useContext(CheckContext);
   const props = useDefaultProps(context ? context.inject(_props) : _props, checkboxDefaultProps);
   const { classPrefix } = useConfig();
   const classPrefixCheckBox = usePrefixClass('checkbox');
   const {
+    className,
     placement,
     content,
     indeterminate,
@@ -152,7 +152,7 @@ const Checkbox = forwardRef((_props: CheckBoxProps) => {
         })}
         style={{ WebkitLineClamp: maxLabelRow }}
       >
-        {label}
+        {parseTNode(label)}
       </div>
       <div
         className={classNames({
@@ -161,28 +161,26 @@ const Checkbox = forwardRef((_props: CheckBoxProps) => {
         })}
         style={{ WebkitLineClamp: maxContentRow }}
       >
-        {content}
+        {parseTNode(content)}
       </div>
     </div>
   );
 
   return (
-    <>
-      <div className={checkboxClassName} onClick={handleClick}>
-        {icon && renderIconNode()}
-        {renderCheckBoxContent()}
-        {/* 下边框 */}
-        {!borderless && (
-          <div className={`${classPrefixCheckBox}__border ${classPrefixCheckBox}__border--${placement}`}></div>
-        )}
-      </div>
-    </>
+    <div ref={ref} className={classNames(checkboxClassName, className)} onClick={handleClick}>
+      {icon && renderIconNode()}
+      {renderCheckBoxContent()}
+      {/* 下边框 */}
+      {!borderless && (
+        <div className={`${classPrefixCheckBox}__border ${classPrefixCheckBox}__border--${placement}`}></div>
+      )}
+    </div>
   );
 });
 
 Checkbox.displayName = 'Checkbox';
 
 export default forwardRefWithStatics(
-  (props: TdCheckboxProps, ref: Ref<HTMLInputElement>) => <Checkbox ref={ref} {...props} />,
+  (props: CheckBoxProps, ref: Ref<HTMLDivElement>) => <Checkbox ref={ref} {...props} />,
   { Group: CheckboxGroup },
 );

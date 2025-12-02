@@ -29,3 +29,23 @@ onClear | Function |  | TS 类型：`(context: { e: MouseEvent }) => void`<br/>�
 onFocus | Function |  | TS 类型：`(context: { value: string; e: FocusEvent }) => void`<br/>获得焦点时触发 | N
 onSearch | Function |  | TS 类型：`(context?: { value: string; trigger: 'submit' \| 'option-click' \| 'clear'; e?: InputEvent \| MouseEvent }) => void`<br/>【讨论中】搜索触发，包含：手机键盘提交健、联想关键词点击、清空按钮点击等 | N
 onSubmit | Function |  | TS 类型：`(context: { value: string; e: KeyboardEvent }) => void`<br/>提交时触发，如：手机键盘提交按钮点击 | N
+
+### CSS Variables
+
+组件提供了下列 CSS 变量，可用于自定义样式。
+名称 | 默认值 | 描述 
+-- | -- | --
+--td-search-action-color | @brand-color | -
+--td-search-bg-color | @bg-color-secondarycontainer | -
+--td-search-clear-icon-color | @text-color-placeholder | -
+--td-search-clear-icon-size | 24px | -
+--td-search-font | @font-body-large | -
+--td-search-height | 40px | -
+--td-search-icon-color | @text-color-placeholder | -
+--td-search-icon-size | 24px | -
+--td-search-label-color | @text-color-primary | -
+--td-search-padding | 8px 12px | -
+--td-search-placeholder-color | @text-color-placeholder | -
+--td-search-result-high-light-color | @brand-color | -
+--td-search-square-radius | @radius-default | -
+--td-search-text-color | @text-color-primary | -

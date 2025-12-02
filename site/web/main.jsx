@@ -1,20 +1,22 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
+
+import { registerLocaleChange } from '@tdesign/site-components';
+import '@tdesign/site-components/lib/styles/prism-theme-dark.less';
+import '@tdesign/site-components/lib/styles/prism-theme.less';
+import '@tdesign/site-components/lib/styles/style.css';
+
+import 'tdesign-theme-generator';
+
 import App from './App';
+import '../style/web/index.less';
 
-// import '@common/style/mobile/index.less';
+registerLocaleChange();
 
-import 'tdesign-site-components';
-import 'tdesign-site-components/lib/styles/style.css';
-import 'tdesign-site-components/lib/styles/prism-theme.less';
-import 'tdesign-site-components/lib/styles/prism-theme-dark.less';
+const root = ReactDOM.createRoot(document.getElementById('app'));
 
-// import icons webcomponents
-import 'tdesign-icons-view';
-
-ReactDOM.render(
+root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
-  document.getElementById('app'),
 );

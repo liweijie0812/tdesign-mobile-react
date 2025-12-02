@@ -1,15 +1,14 @@
 import React from 'react';
 import type { CSSProperties, ReactElement } from 'react';
 import cls from 'classnames';
-import keys from 'lodash/keys';
-import assign from 'lodash/assign';
+import { assign, keys } from 'lodash-es';
 
 export interface NativeProps<S extends string = never> {
   className?: string;
   style?: CSSProperties & Partial<Record<S, string>>;
 }
 
-export default function withNativeProps<P extends NativeProps>(props: P, element: ReactElement) {
+export default function withNativeProps<P extends NativeProps>(props: P, element: ReactElement<P>) {
   const elementProps = element.props;
   const nativeProps: NativeProps & Record<string, any> = {};
   if (props.className) {

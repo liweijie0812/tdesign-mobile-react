@@ -1,16 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
-import type { FC, HTMLAttributes, CSSProperties } from 'react';
+import type { FC, HTMLAttributes } from 'react';
 import Sticky from '../sticky';
 import Badge from '../badge';
-import { TdTabPanelProps, TdTabsProps } from './type';
+import { TdTabPanelProps, TdTabsProps, TabValue } from './type';
 import TabPanel from './TabPanel';
-import useConfig from '../_util/useConfig';
+import type { TabPanelProps } from './TabPanel';
+import useConfig from '../hooks/useConfig';
 import { usePrefixClass } from '../hooks/useClass';
 import useDefaultProps from '../hooks/useDefaultProps';
 import { tabsDefaultProps } from './defaultProps';
 import parseTNode from '../_util/parseTNode';
+import useDefault from '../_util/useDefault';
 import TabContext from './context';
+import { Styles } from '../common';
 
 type TabsHTMLAttrs = Pick<HTMLAttributes<HTMLDivElement>, 'className' | 'style'>;
 export interface TabsProps extends TdTabsProps, TabsHTMLAttrs {}
@@ -43,15 +46,15 @@ const Tabs: FC<TabsProps> = (props) => {
     [size, tabsClass],
   );
 
-  const itemProps = useMemo<Array<TdTabPanelProps>>(() => {
+  const itemProps = useMemo<Array<TabPanelProps>>(() => {
     if (list && list.length > 0) {
       return list;
     }
 
     const propsArr = [];
 
-    React.Children.forEach(children, (child: JSX.Element) => {
-      if (child.type.displayName === TabPanel.displayName) {
+    React.Children.forEach(children, (child: React.ReactElement<TabPanelProps>) => {
+      if ((child.type as any).displayName === TabPanel.displayName) {
         propsArr.push(child.props);
       }
     });
@@ -59,10 +62,12 @@ const Tabs: FC<TabsProps> = (props) => {
     return propsArr;
   }, [list, children]);
 
-  const [activeKey, setActiveKey] = useState<number | string>(
-    defaultValue || defaultValue === 0 ? defaultValue : value,
-  );
-  const [lineStyle, setLineStyle] = useState({});
+  const [currentValue, setCurrentValue] = useDefault(value, defaultValue, onChange);
+  const [previousValue, setPreviousValue] = useState<TabValue>();
+
+  const [lineStyle, setLineStyle] = useState<Styles>({
+    opacity: 0,
+  });
   const { classPrefix } = useConfig();
   const activeClass = `${tabsClass}__item--active`;
   const navScrollRef = useRef<HTMLDivElement>(null);
@@ -77,23 +82,27 @@ const Tabs: FC<TabsProps> = (props) => {
   const tabIndex = useMemo(() => {
     let index = 0;
     for (let i = 0; i < itemProps.length; i++) {
-      if (itemProps[i].value === activeKey) {
+      if (itemProps[i].value === currentValue) {
         index = i;
         break;
       }
     }
     return index;
-  }, [activeKey, itemProps]);
+  }, [currentValue, itemProps]);
 
-  const currentIndex = useMemo(() => itemProps.map((p) => p.value).indexOf(activeKey), [activeKey, itemProps]);
+  const currentIndex = useMemo(() => itemProps.map((p) => p.value).indexOf(currentValue), [currentValue, itemProps]);
 
   const moveToActiveTab = () => {
+    const isInit = previousValue === undefined;
+
+    setPreviousValue(currentValue);
+
     if (navWrapRef.current && navLineRef.current && showBottomLine) {
       const tab = navWrapRef.current.querySelector<HTMLElement>(`.${activeClass}`);
       if (!tab) return;
       const line = navLineRef.current;
       const tabInner = tab.querySelector<HTMLElement>(`.${classPrefix}-badge`);
-      const style: CSSProperties = {};
+      const style: Styles = { opacity: 1 };
       if (bottomLineMode === 'auto') {
         style.width = `${Number(tabInner?.offsetWidth)}px`;
         style.transform = `translateX(${Number(tab?.offsetLeft) + Number(tabInner?.offsetLeft)}px)`;
@@ -106,26 +115,35 @@ const Tabs: FC<TabsProps> = (props) => {
         }px)`;
       }
 
-      if (animation) {
+      if (isInit) {
+        style.transitionDuration = '0s';
+      } else if (animation) {
         style.transitionDuration = `${animation.duration}ms`;
       }
 
       setLineStyle(style);
     }
+
+    if (navScrollRef.current) {
+      const tab = navScrollRef.current.querySelector<HTMLElement>(`.${activeClass}`);
+      if (!tab) return;
+      const tabLeft = tab?.offsetLeft;
+      const tabWidth = tab?.offsetWidth;
+      const navScrollWidth = navScrollRef.current.offsetWidth;
+      const scrollDistance = tabLeft - navScrollWidth / 2 + tabWidth / 2;
+      navScrollRef.current.scrollTo({ left: scrollDistance, behavior: 'smooth' });
+    }
   };
 
   const handleTabClick = (item: TdTabPanelProps) => {
     const { value, disabled } = item;
-    if (disabled || activeKey === value) {
+    if (disabled || currentValue === value) {
       return false;
     }
-    setActiveKey(item.value);
-    if (onChange) {
-      onChange(item.value, parseTNode(item.label).toString());
-    }
-    if (onClick) {
-      onClick(item.value, parseTNode(item.label).toString());
-    }
+    setCurrentValue(item.value, parseTNode(item.label).toString());
+
+    onClick?.(item.value, parseTNode(item.label).toString());
+
     setTimeout(() => {
       moveToActiveTab();
     }, 0);
@@ -213,7 +231,7 @@ const Tabs: FC<TabsProps> = (props) => {
           className={classnames({
             [`${tabsClass}__item ${tabsClass}__item--top`]: true,
             [`${tabsClass}__item--evenly`]: spaceEvenly,
-            [`${activeClass}`]: item.value === activeKey,
+            [`${activeClass}`]: item.value === currentValue,
             [`${tabsClass}__item--disabled`]: item.disabled,
             [`${tabsClass}__item--${theme}`]: true,
           })}
@@ -223,7 +241,7 @@ const Tabs: FC<TabsProps> = (props) => {
             <div
               className={classnames({
                 [`${tabsClass}__item-inner ${tabsClass}__item-inner--${theme}`]: true,
-                [`${tabsClass}__item-inner--active`]: theme === 'tag' && item.value === activeKey,
+                [`${tabsClass}__item-inner--active`]: theme === 'tag' && item.value === currentValue,
               })}
             >
               <div>{parseTNode(item.label)}</div>
@@ -262,7 +280,7 @@ const Tabs: FC<TabsProps> = (props) => {
         onTouchMove={handleTouchmove}
         onTouchEnd={handleTouchend}
       >
-        <TabContext.Provider value={{ activeKey }}>{children}</TabContext.Provider>
+        <TabContext.Provider value={{ currentValue }}>{children}</TabContext.Provider>
       </div>
     </div>
   );

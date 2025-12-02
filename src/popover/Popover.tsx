@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import { createPopper, Placement } from '@popperjs/core';
 import { useClickAway } from 'ahooks';
 import { CSSTransition } from 'react-transition-group';
@@ -9,12 +9,16 @@ import { StyledProps } from '../common';
 import { usePrefixClass } from '../hooks/useClass';
 import useDefaultProps from '../hooks/useDefaultProps';
 import { popoverDefaultProps } from './defaultProps';
-import { parseContentTNode } from '../_util/parseTNode';
+import parseTNode, { parseContentTNode } from '../_util/parseTNode';
 import useDefault from '../_util/useDefault';
 
 export interface PopoverProps extends TdPopoverProps, StyledProps {}
 
-const Popover: React.FC<PopoverProps> = (props) => {
+export interface PopoverExposeRef {
+  updatePopper: () => null | void;
+}
+
+const Popover = forwardRef<PopoverExposeRef, PopoverProps>((props, ref) => {
   const {
     closeOnClickOutside,
     className,
@@ -31,7 +35,7 @@ const Popover: React.FC<PopoverProps> = (props) => {
   } = useDefaultProps<PopoverProps>(props, popoverDefaultProps);
 
   const [currentVisible, setVisible] = useDefault(visible, defaultVisible, onVisibleChange);
-  const [active, setActive] = useState(visible);
+  const [active, setActive] = useState(currentVisible);
   const referenceRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const popperRef = useRef<ReturnType<typeof createPopper> | null>(null);
@@ -41,8 +45,9 @@ const Popover: React.FC<PopoverProps> = (props) => {
       classNames({
         [`${popoverClass}__content`]: true,
         [`${popoverClass}--${theme}`]: true,
+        [`${popoverClass}__content--arrow`]: showArrow,
       }),
-    [popoverClass, theme],
+    [popoverClass, theme, showArrow],
   );
 
   const getPopperPlacement = (placement: PopoverProps['placement']): Placement =>
@@ -65,7 +70,7 @@ const Popover: React.FC<PopoverProps> = (props) => {
       x: number;
       y: number;
     };
-    placement: String;
+    placement: string;
   }) => {
     const horizontal = ['top', 'bottom'];
     const vertical = ['left', 'right'];
@@ -80,18 +85,18 @@ const Popover: React.FC<PopoverProps> = (props) => {
 
     const isHorizontal = horizontal.find((item) => placement.includes(item));
     const isEnd = placement.includes('end');
-    const small = (a: number, b: number) => (a < b ? a : b);
+
     if (isHorizontal) {
-      const padding = isEnd ? small(width + x, popperWidth) : small(windowWidth - x, popperWidth);
+      const padding = isEnd ? Math.min(width + x, popperWidth) : Math.min(windowWidth - x, popperWidth);
       return {
-        [isEnd ? 'left' : 'right']: padding - 22,
+        [isEnd ? 'left' : 'right']: padding - 28,
       };
     }
 
     const isVertical = vertical.find((item) => placement.includes(item));
     if (isVertical) {
       return {
-        [isEnd ? 'top' : 'bottom']: popperHeight - 22,
+        [isEnd ? 'top' : 'bottom']: popperHeight - 28,
       };
     }
   };
@@ -149,7 +154,7 @@ const Popover: React.FC<PopoverProps> = (props) => {
   };
 
   useEffect(() => {
-    setVisible(visible);
+    updateVisible(visible);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
@@ -184,6 +189,10 @@ const Popover: React.FC<PopoverProps> = (props) => {
     </div>
   );
 
+  useImperativeHandle(ref, () => ({
+    updatePopper,
+  }));
+
   return (
     <>
       <div
@@ -192,8 +201,8 @@ const Popover: React.FC<PopoverProps> = (props) => {
         style={style}
         onClick={onClickReference}
       >
-        {children}
-        {triggerElement}
+        {parseTNode(children)}
+        {parseTNode(triggerElement)}
       </div>
       <CSSTransition
         in={currentVisible}
@@ -213,7 +222,7 @@ const Popover: React.FC<PopoverProps> = (props) => {
       </CSSTransition>
     </>
   );
-};
+});
 
 Popover.displayName = 'Popover';
 
